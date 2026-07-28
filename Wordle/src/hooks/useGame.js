@@ -5,6 +5,9 @@ import { evaluateGuess } from '../utils/evaluateGuess'
 import { getKeyboardStates } from '../utils/keyboardState'
 import { randomWord } from '../utils/randomWord'
 import { getStorage, setStorage } from '../utils/storage'
+import { playRevealSound, playWinSound, playLoseSound, playHintSound, playErrorSound } from '../utils/sound'
+
+const emptyGuess = () => Array(WORD_LENGTH).fill('')
 
 const STATS_KEY = 'luma-wordle-stats'
 const validWords = new Set(VALID_WORDS)
@@ -17,15 +20,15 @@ const WORD_LISTS = {
 
 const messageForWin = (attempts) => ['Genius.', 'Magnificent.', 'Excellent.', 'Great.', 'Well played.', 'Made it.'][attempts - 1]
 
-export function useGame({ onMessage, gameMode }) {
+export function useGame({ onMessage, gameMode, soundEnabled = true }) {
   const revealTimer = useRef(null)
   const [solutionWord, setSolutionWord] = useState(() => randomWord(WORD_LISTS[gameMode] || MEDIUM_WORDS))
-  const [currentGuess, setCurrentGuess] = useState('')
+  const [currentGuess, setCurrentGuess] = useState(emptyGuess())
   const [pastGuesses, setPastGuesses] = useState([])
   const [gameStatus, setGameStatus] = useState(GAME_STATUS.PLAYING)
   const [shakeRow, setShakeRow] = useState(-1)
-  const [hintIndices, setHintIndices] = useState([])
-  const [hintsRemaining, setHintsRemaining] = useState(3)
+  const [hintPositions, setHintPositions] = useState([])
+  const [hintsRemaining, setHintsRemaining] = useState(6)
   const [stats, setStats] = useState(() => ({ ...EMPTY_STATS, ...getStorage(STATS_KEY, {}) }))
 
   const saveStats = useCallback((updater) => {
@@ -39,12 +42,12 @@ export function useGame({ onMessage, gameMode }) {
   const newGame = useCallback(() => {
     window.clearTimeout(revealTimer.current)
     setSolutionWord(randomWord(WORD_LISTS[gameMode] || MEDIUM_WORDS))
-    setCurrentGuess('')
+    setCurrentGuess(emptyGuess())
     setPastGuesses([])
     setGameStatus(GAME_STATUS.PLAYING)
     setShakeRow(-1)
-    setHintIndices([])
-    setHintsRemaining(3)
+    setHintPositions([])
+    setHintsRemaining(6)
   }, [gameMode])
 
   useEffect(() => {
@@ -52,65 +55,98 @@ export function useGame({ onMessage, gameMode }) {
     const wordList = WORD_LISTS[gameMode] || MEDIUM_WORDS
     const timer = window.setTimeout(() => {
       setSolutionWord(randomWord(wordList))
-      setCurrentGuess('')
+      setCurrentGuess(emptyGuess())
       setPastGuesses([])
       setGameStatus(GAME_STATUS.PLAYING)
       setShakeRow(-1)
-      setHintIndices([])
-      setHintsRemaining(3)
+      setHintPositions([])
+      setHintsRemaining(6)
     }, 0)
     return () => window.clearTimeout(timer)
   }, [gameMode])
 
+  const hintIndices = useMemo(() => hintPositions.map(h => h.index), [hintPositions])
+
   const useHint = useCallback(() => {
     if (hintsRemaining <= 0 || gameStatus !== GAME_STATUS.PLAYING) return
-    const unrevealed = []
-    solutionWord.split('').forEach((letter, index) => {
-      if (!hintIndices.includes(index)) unrevealed.push(index)
+    const availableHints = solutionWord
+      .split('')
+      .map((letter, index) => {
+        if (currentGuess[index] !== letter && !hintPositions.some(h => h.index === index)) {
+          return index
+        }
+        return null
+      })
+      .filter(index => index !== null)
+    if (availableHints.length === 0) return
+    const randomIndex = availableHints[Math.floor(Math.random() * availableHints.length)]
+    setCurrentGuess((prev) => {
+      const next = [...prev]
+      next[randomIndex] = solutionWord[randomIndex]
+      return next
     })
-    if (unrevealed.length === 0) return
-    const pick = unrevealed[Math.floor(Math.random() * unrevealed.length)]
-    setHintIndices((prev) => [...prev, pick])
+    setHintPositions((prev) => [...prev, { index: randomIndex, letter: solutionWord[randomIndex] }])
     setHintsRemaining((prev) => prev - 1)
-    onMessage({ text: 'One letter has been revealed!', tone: 'hint' })
-  }, [hintsRemaining, gameStatus, solutionWord, hintIndices, onMessage])
+    if (soundEnabled) playHintSound()
+    onMessage({ text: 'Hint used! A helpful letter has been revealed.', tone: 'hint' })
+  }, [hintsRemaining, gameStatus, solutionWord, currentGuess, hintPositions, onMessage, soundEnabled])
 
   const handleKey = useCallback((key) => {
     if (gameStatus !== GAME_STATUS.PLAYING) return
     if (/^[A-Z]$/.test(key)) {
-      setCurrentGuess((guess) => guess.length < WORD_LENGTH ? `${guess}${key}` : guess)
+      setCurrentGuess((prev) => {
+        const next = [...prev]
+        const idx = next.indexOf('')
+        if (idx !== -1) next[idx] = key
+        return next
+      })
       return
     }
     if (key === 'BACKSPACE') {
-      setCurrentGuess((guess) => guess.slice(0, -1))
+      for (let i = currentGuess.length - 1; i >= 0; i--) {
+        if (currentGuess[i] !== '') {
+          setCurrentGuess((prev) => {
+            const next = [...prev]
+            next[i] = ''
+            return next
+          })
+          setHintPositions((prev) => prev.filter(h => h.index !== i))
+          return
+        }
+      }
       return
     }
     if (key !== 'ENTER') return
 
-    if (currentGuess.length !== WORD_LENGTH) {
+    const guessStr = currentGuess.join('')
+    if (guessStr.length !== WORD_LENGTH) {
       setShakeRow(pastGuesses.length)
+      if (soundEnabled) playErrorSound()
       onMessage({ text: 'Not enough letters', tone: 'warning' })
       window.setTimeout(() => setShakeRow(-1), 450)
       return
     }
-    if (!validWords.has(currentGuess)) {
+    if (!validWords.has(guessStr)) {
       setShakeRow(pastGuesses.length)
+      if (soundEnabled) playErrorSound()
       onMessage({ text: 'Not in word list', tone: 'warning' })
       window.setTimeout(() => setShakeRow(-1), 450)
       return
     }
 
-    const evaluation = evaluateGuess(currentGuess, solutionWord)
-    const submittedGuess = { word: currentGuess, evaluation }
+    const evaluation = evaluateGuess(guessStr, solutionWord)
+    const submittedGuess = { word: guessStr, evaluation }
     const attempt = pastGuesses.length + 1
-    const hasWon = currentGuess === solutionWord
+    const hasWon = guessStr === solutionWord
     const hasLost = !hasWon && attempt === MAX_ATTEMPTS
     setPastGuesses((guesses) => [...guesses, submittedGuess])
-    setCurrentGuess('')
+    setCurrentGuess(emptyGuess())
     setGameStatus(GAME_STATUS.REVEALING)
+    if (soundEnabled) playRevealSound()
 
     revealTimer.current = window.setTimeout(() => {
       if (hasWon) {
+        if (soundEnabled) playWinSound()
         setGameStatus(GAME_STATUS.WON)
         saveStats((current) => ({
           ...current,
@@ -122,6 +158,7 @@ export function useGame({ onMessage, gameMode }) {
         }))
         onMessage({ text: messageForWin(attempt), tone: 'success' })
       } else if (hasLost) {
+        if (soundEnabled) playLoseSound()
         setGameStatus(GAME_STATUS.LOST)
         saveStats((current) => ({
           ...current,
@@ -134,12 +171,12 @@ export function useGame({ onMessage, gameMode }) {
         setGameStatus(GAME_STATUS.PLAYING)
       }
     }, 1450)
-  }, [currentGuess, gameStatus, onMessage, pastGuesses.length, saveStats, solutionWord])
+  }, [currentGuess, gameStatus, onMessage, pastGuesses.length, saveStats, solutionWord, soundEnabled])
 
   const keyboardStates = useMemo(() => getKeyboardStates(pastGuesses), [pastGuesses])
 
   return {
-    currentGuess,
+    currentGuess: currentGuess.join(''),
     gameStatus,
     handleKey,
     hintIndices,

@@ -31,7 +31,7 @@ function App() {
     ...DEFAULT_SETTINGS,
     ...getStorage(SETTINGS_KEY, {}),
   }))
-  const game = useGame({ onMessage: setToast, gameMode: settings.gameMode })
+  const game = useGame({ onMessage: setToast, gameMode: settings.gameMode, soundEnabled: settings.soundEnabled })
   const handleGameKey = game.handleKey
 
   const handleInput = useCallback((key) => {

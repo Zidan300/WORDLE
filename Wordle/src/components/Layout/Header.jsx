@@ -15,7 +15,7 @@ export function Header({ gameMode, hintsRemaining, onHint, onHelp, onNewGame, on
       <div className="header-center">
         <span className="mode-badge">{MODE_LABELS[gameMode] || 'Medium'}</span>
         <button className="hint-button" type="button" onClick={onHint} disabled={hintsRemaining <= 0} aria-label={`Use hint. ${hintsRemaining} remaining`}>
-          <span className="hint-icon">💡</span> Hint <span className="hint-count">{hintsRemaining}</span>
+          <span className="hint-icon">💡</span> Hint <span className="hint-count" key={hintsRemaining}>{hintsRemaining}</span>
         </button>
       </div>
       <nav className="header-actions" aria-label="Game tools">

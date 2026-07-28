@@ -1,27 +1,30 @@
 @keyframes float-cloud { 50% { transform: translate3d(5vw, -12px, 0); } }
 @keyframes bubble-bob { 50% { transform: translate3d(-10px, -24px, 0) scale(1.06); } }
-@keyframes tile-pop { 0% { transform: scale(.62, 1.18); } 55% { transform: scale(1.1, .91); } 78% { transform: scale(.96, 1.04); } 100% { transform: scale(1); } }
-@keyframes tile-flip { 0% { transform: rotateX(0) scale(1); } 43% { transform: rotateX(-93deg) scale(.94); } 63% { transform: rotateX(-93deg) scale(.94); } 100% { transform: rotateX(0) scale(1); } }
-@keyframes correct-bounce { 0%, 100% { transform: translateY(0); } 30% { transform: translateY(-10px) scale(1.08); } 55% { transform: translateY(3px) scale(.97); } 75% { transform: translateY(-3px) scale(1.02); } }
-@keyframes present-wiggle { 25% { transform: rotate(-4deg) scale(1.04); } 55% { transform: rotate(4deg) scale(1.04); } 78% { transform: rotate(-1deg); } }
-@keyframes absent-soften { from { opacity: .45; transform: scale(.9); } to { opacity: 1; transform: scale(1); } }
-@keyframes row-shake { 14%, 42%, 70% { transform: translateX(-9px) rotate(-.5deg); } 28%, 56%, 84% { transform: translateX(9px) rotate(.5deg); } }
-@keyframes toast-in { from { opacity: 0; transform: translateY(-18px) scale(.7) rotate(-2deg); } to { opacity: 1; transform: translateY(0) scale(1) rotate(0); } }
-@keyframes modal-in { from { opacity: 0; transform: translateY(26px) scale(.86) rotate(1deg); } to { opacity: 1; transform: translateY(0) scale(1) rotate(0); } }
+@keyframes tile-pop { 0% { transform: scale(.6, 1.2); opacity: .7; } 50% { transform: scale(1.12, .9); } 75% { transform: scale(.97, 1.04); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes tile-flip { 0% { transform: rotateX(0) scale(1); } 40% { transform: rotateX(-90deg) scale(.92); } 50% { transform: rotateX(-90deg) scale(.92); } 100% { transform: rotateX(0) scale(1); } }
+@keyframes correct-bounce { 0%, 100% { transform: translateY(0); } 25% { transform: translateY(-10px) scale(1.08); } 50% { transform: translateY(3px) scale(.97); } 75% { transform: translateY(-3px) scale(1.02); } }
+@keyframes present-wiggle { 20% { transform: rotate(-4deg) scale(1.05); } 50% { transform: rotate(4deg) scale(1.05); } 75% { transform: rotate(-2deg); } }
+@keyframes absent-soften { from { opacity: .5; transform: scale(.88); } to { opacity: 1; transform: scale(1); } }
+@keyframes row-shake { 0%, 100% { transform: translateX(0); } 15%, 45%, 75% { transform: translateX(-8px) rotate(-.4deg); } 30%, 60%, 90% { transform: translateX(8px) rotate(.4deg); } }
+@keyframes toast-in { from { opacity: 0; transform: translateY(-20px) scale(.7) rotate(-2deg); } to { opacity: 1; transform: translateY(0) scale(1) rotate(0); } }
+@keyframes modal-in { from { opacity: 0; transform: translateY(30px) scale(.84) rotate(1deg); } to { opacity: 1; transform: translateY(0) scale(1) rotate(0); } }
 @keyframes confetti-fall { from { transform: translateY(-12vh) rotate(0) scale(.7); opacity: 0; } 8% { opacity: 1; } 70% { transform: translateY(76vh) rotate(480deg) scale(1); } to { transform: translateY(110vh) rotate(700deg) scale(.6); opacity: 0; } }
 @keyframes sparkle { 50% { transform: scale(1.3) rotate(25deg); opacity: .45; } }
-@keyframes float-ui { 50% { transform: translateY(-4px); } }
 
 @keyframes hint-glow { 0%, 100% { box-shadow: 0 0 5px rgba(169, 118, 244, .4); } 50% { box-shadow: 0 0 20px rgba(169, 118, 244, .7), 0 0 40px rgba(169, 118, 244, .3); } }
-@keyframes hint-reveal { 0% { transform: scale(0) rotate(-180deg); opacity: 0; } 60% { transform: scale(1.25) rotate(10deg); opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+@keyframes hint-reveal { 0% { transform: scale(0) rotate(-180deg); opacity: 0; } 50% { transform: scale(1.3) rotate(10deg); opacity: 1; } 75% { transform: scale(.92); } 100% { transform: scale(1) rotate(0); opacity: 1; } }
 @keyframes correct-glow-pulse { 0%, 100% { box-shadow: var(--correct-glow); } 50% { box-shadow: 0 0 30px rgba(52, 201, 120, .6), 0 0 60px rgba(52, 201, 120, .25); } }
-@keyframes key-press { 0% { transform: scale(1); } 40% { transform: scale(.88); } 70% { transform: scale(1.05); } 100% { transform: scale(1); } }
-@keyframes button-elastic { 0% { transform: scale(1); } 35% { transform: scale(.88); } 65% { transform: scale(1.08); } 100% { transform: scale(1); } }
-@keyframes confetti-sparkle { 0%, 100% { opacity: 1; transform: scale(1) rotate(0); } 50% { opacity: .5; transform: scale(1.5) rotate(180deg); } }
+@keyframes key-press { 0% { transform: scale(1); } 35% { transform: scale(.85); } 65% { transform: scale(1.06); } 100% { transform: scale(1); } }
+@keyframes button-elastic { 0% { transform: scale(1); } 30% { transform: scale(.85); } 60% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+@keyframes hint-toast-pop { 0% { opacity: 0; transform: translateX(-50%) scale(.4) rotate(-4deg); } 45% { opacity: 1; transform: translateX(-50%) scale(1.15) rotate(0); } 70% { transform: translateX(-50%) scale(.93); } 100% { opacity: 1; transform: translateX(-50%) scale(1) rotate(0); } }
+@keyframes hint-count-bounce { 0% { transform: scale(1); } 25% { transform: scale(1.4); } 55% { transform: scale(.82); } 100% { transform: scale(1); } }
+@keyframes hint-pop-in { 0% { transform: scale(0.3); opacity: 0; } 60% { transform: scale(1.15); } 100% { transform: scale(1); opacity: 1; } }
 
 .confetti-piece { animation: confetti-fall 3.3s linear both; }
-.confetti-piece:nth-child(2n) { animation-duration: 2.8s; }
-.confetti-piece:nth-child(3n) { animation-duration: 3.8s; }
-.confetti-piece:nth-child(5n) { animation-delay: .2s; }
+.confetti-piece:nth-child(2n) { animation-duration: 2.6s; }
+.confetti-piece:nth-child(3n) { animation-duration: 4s; }
+.confetti-piece:nth-child(5n) { animation-delay: .25s; }
+.confetti-piece:nth-child(7n) { animation-delay: .45s; }
 
 :root[data-motion='reduce'] *, :root[data-motion='reduce'] *::before, :root[data-motion='reduce'] *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
