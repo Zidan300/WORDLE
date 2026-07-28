@@ -7,12 +7,17 @@ export const GAME_STATUS = {
   LOST: 'lost',
 }
 
+export const GAME_MODE = {
+  EASY: 'easy',
+  MEDIUM: 'medium',
+  HARD: 'hard',
+}
+
 export const DEFAULT_SETTINGS = {
-  theme: 'light',
   soundEnabled: true,
-  highContrast: false,
+  gameMode: GAME_MODE.MEDIUM,
+  hintsRemaining: 3,
   reduceMotion: false,
-  animationSpeed: 'standard',
 }
 
 export const EMPTY_STATS = {

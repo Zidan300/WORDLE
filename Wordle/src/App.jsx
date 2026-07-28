@@ -8,26 +8,32 @@ import { HelpModal } from './components/Modal/HelpModal'
 import { SettingsModal } from './components/Modal/SettingsModal'
 import { StatsModal } from './components/Modal/StatsModal'
 import { Toast } from './components/UI/Toast'
-import { useAnimations } from './hooks/useAnimations'
 import { useGame } from './hooks/useGame'
 import { useKeyboard } from './hooks/useKeyboard'
-import { DEFAULT_SETTINGS } from './constants/config'
+import { DEFAULT_SETTINGS, GAME_MODE } from './constants/config'
 import { getStorage, setStorage } from './utils/storage'
 import { playKeySound } from './utils/sound'
 import './styles/global.css'
 
 const SETTINGS_KEY = 'luma-wordle-settings'
 
+const MODE_OPTIONS = [
+  { id: GAME_MODE.EASY, icon: '🌱', title: 'Easy', desc: 'Simple common words — perfect for beginners and young learners.' },
+  { id: GAME_MODE.MEDIUM, icon: '⭐', title: 'Medium', desc: 'Normal Wordle difficulty — a balanced challenge.' },
+  { id: GAME_MODE.HARD, icon: '🔥', title: 'Hard', desc: 'Tough words for seasoned word detectives.' },
+]
+
 function App() {
+  const [screen, setScreen] = useState('mode-select')
   const [modal, setModal] = useState(null)
   const [toast, setToast] = useState(null)
   const [settings, setSettings] = useState(() => ({
     ...DEFAULT_SETTINGS,
     ...getStorage(SETTINGS_KEY, {}),
   }))
-  const game = useGame({ onMessage: setToast })
+  const game = useGame({ onMessage: setToast, gameMode: settings.gameMode })
   const handleGameKey = game.handleKey
-  const prefersReducedMotion = useAnimations(settings.reduceMotion)
+
   const handleInput = useCallback((key) => {
     if (settings.soundEnabled) playKeySound(key)
     handleGameKey(key)
@@ -35,16 +41,13 @@ function App() {
 
   useKeyboard({
     onKey: handleInput,
-    disabled: game.gameStatus !== 'playing',
+    disabled: game.gameStatus !== 'playing' || screen !== 'game',
   })
 
   useEffect(() => {
-    document.documentElement.dataset.theme = settings.theme
-    document.documentElement.dataset.contrast = settings.highContrast ? 'high' : 'normal'
-    document.documentElement.dataset.motion = prefersReducedMotion ? 'reduce' : 'full'
-    document.documentElement.dataset.speed = settings.animationSpeed
+    document.documentElement.dataset.motion = settings.reduceMotion ? 'reduce' : 'full'
     setStorage(SETTINGS_KEY, settings)
-  }, [prefersReducedMotion, settings])
+  }, [settings])
 
   useEffect(() => {
     if (game.gameStatus === 'won' || game.gameStatus === 'lost') {
@@ -68,32 +71,76 @@ function App() {
     setModal(null)
   }
 
+  const selectMode = (mode) => {
+    updateSettings({ gameMode: mode })
+    setScreen('game')
+  }
+
+  if (screen === 'mode-select') {
+    return (
+      <main className="app-shell">
+        <div className="ambient ambient-one" aria-hidden="true" />
+        <div className="ambient ambient-two" aria-hidden="true" />
+        <div className="noise" aria-hidden="true" />
+        <section className="game-frame" aria-label="Wordle game">
+          <header className="header">
+            <div className="watermark" aria-label="Created by Zidan Thapaliya">
+              <span aria-hidden="true">✦</span> Created by Zidan Thapaliya
+            </div>
+          </header>
+          <div className="play-area">
+            <div className="mode-select">
+              <span className="modal-kicker">WELCOME TO</span>
+              <h2>Word Puzzle</h2>
+              <p>Choose your difficulty and start guessing!</p>
+              <div className="mode-cards">
+                {MODE_OPTIONS.map((mode) => (
+                  <button key={mode.id} className="mode-card" onClick={() => selectMode(mode.id)}>
+                    <div className="mode-card-title">
+                      <span className="mode-card-icon">{mode.icon}</span>
+                      {mode.title}
+                    </div>
+                    <div className="mode-card-desc">{mode.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <Footer />
+        </section>
+      </main>
+    )
+  }
+
   return (
     <main className="app-shell">
       <div className="ambient ambient-one" aria-hidden="true" />
       <div className="ambient ambient-two" aria-hidden="true" />
       <div className="noise" aria-hidden="true" />
-      <section className="game-frame" aria-label="Luma Word game">
+      <section className="game-frame" aria-label="Wordle game">
         <Header
+          gameMode={settings.gameMode}
+          hintsRemaining={game.hintsRemaining}
+          onHint={game.useHint}
           onHelp={() => setModal('help')}
           onNewGame={startNewGame}
           onSettings={() => setModal('settings')}
           onStats={() => setModal('stats')}
-          theme={settings.theme}
           soundEnabled={settings.soundEnabled}
-          onThemeToggle={() => updateSettings({ theme: settings.theme === 'dark' ? 'light' : 'dark' })}
           onSoundToggle={() => updateSettings({ soundEnabled: !settings.soundEnabled })}
         />
 
         <div className="play-area">
           <div className="game-intro">
-            <span className="eyebrow">Daily word ritual</span>
-            <p>Find the hidden five-letter word in six thoughtful tries.</p>
+            <span className="eyebrow">Find the hidden word</span>
+            <p>Five letters, six chances. Choose wisely.</p>
           </div>
           <GameBoard
             currentGuess={game.currentGuess}
             pastGuesses={game.pastGuesses}
             shakeRow={game.shakeRow}
+            hintIndices={game.hintIndices}
+            solutionWord={game.solutionWord}
           />
           <Keyboard
             keyStates={keyboardStates}
@@ -105,8 +152,9 @@ function App() {
       </section>
 
       {game.gameStatus === 'won' && <div className="confetti" aria-hidden="true">
-        {Array.from({ length: 18 }, (_, index) => <i key={index} className={`confetti-piece piece-${index % 6}`} />)}
+        {Array.from({ length: 30 }, (_, index) => <i key={index} className={`confetti-piece piece-${index % 10}`} />)}
       </div>}
+
       <Toast toast={toast} onDismiss={() => setToast(null)} />
       <GameOverModal
         isOpen={modal === 'game-over'}

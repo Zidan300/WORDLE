@@ -11,10 +11,8 @@ export function SettingsModal({ isOpen, onClose, onChange, settings }) {
         <span className="modal-kicker">PREFERENCES</span>
         <h2>Make it yours</h2>
         <div className="settings-group">
-          <div className="setting-select"><span><b>Sky theme</b><small>Choose your preferred playtime sky.</small></span><select value={settings.theme} onChange={(event) => onChange({ theme: event.target.value })}><option value="light">Sunny sky</option><option value="dark">Twilight sky</option></select></div>
-          <div className="setting-select"><span><b>Animation speed</b><small>Controls the pace of tile reveals.</small></span><select value={settings.animationSpeed} onChange={(event) => onChange({ animationSpeed: event.target.value })}><option value="relaxed">Relaxed</option><option value="standard">Standard</option><option value="swift">Swift</option></select></div>
+          <div className="setting-select"><span><b>Difficulty</b><small>Choose your challenge level.</small></span><select value={settings.gameMode} onChange={(event) => onChange({ gameMode: event.target.value })}><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select></div>
           <Toggle label="Sound" description="Gentle interaction feedback." checked={settings.soundEnabled} onChange={(soundEnabled) => onChange({ soundEnabled })} />
-          <Toggle label="High contrast" description="Increase visual separation." checked={settings.highContrast} onChange={(highContrast) => onChange({ highContrast })} />
           <Toggle label="Reduce motion" description="Minimize decorative movement." checked={settings.reduceMotion} onChange={(reduceMotion) => onChange({ reduceMotion })} />
         </div>
       </div>
