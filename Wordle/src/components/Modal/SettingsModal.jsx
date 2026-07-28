@@ -11,7 +11,7 @@ export function SettingsModal({ isOpen, onClose, onChange, settings }) {
         <span className="modal-kicker">PREFERENCES</span>
         <h2>Make it yours</h2>
         <div className="settings-group">
-          <div className="setting-select"><span><b>Appearance</b><small>Choose your preferred atmosphere.</small></span><select value={settings.theme} onChange={(event) => onChange({ theme: event.target.value })}><option value="dark">Dark</option><option value="light">Light</option></select></div>
+          <div className="setting-select"><span><b>Sky theme</b><small>Choose your preferred playtime sky.</small></span><select value={settings.theme} onChange={(event) => onChange({ theme: event.target.value })}><option value="light">Sunny sky</option><option value="dark">Twilight sky</option></select></div>
           <div className="setting-select"><span><b>Animation speed</b><small>Controls the pace of tile reveals.</small></span><select value={settings.animationSpeed} onChange={(event) => onChange({ animationSpeed: event.target.value })}><option value="relaxed">Relaxed</option><option value="standard">Standard</option><option value="swift">Swift</option></select></div>
           <Toggle label="Sound" description="Gentle interaction feedback." checked={settings.soundEnabled} onChange={(soundEnabled) => onChange({ soundEnabled })} />
           <Toggle label="High contrast" description="Increase visual separation." checked={settings.highContrast} onChange={(highContrast) => onChange({ highContrast })} />

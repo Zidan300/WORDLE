@@ -7,9 +7,8 @@ function IconButton({ label, children, onClick, active }) {
 export function Header({ onHelp, onNewGame, onSettings, onStats, onThemeToggle, onSoundToggle, soundEnabled, theme }) {
   return (
     <header className="header">
-      <div className="brand" aria-label="Luma Word">
-        <span className="brand-mark">L</span>
-        <div><strong>Luma</strong><span>WORD</span></div>
+      <div className="watermark" aria-label="Created by Zidan Thapaliya">
+        <span aria-hidden="true">✦</span> Created by Zidan Thapaliya
       </div>
       <nav className="header-actions" aria-label="Game tools">
         <Button className="new-game" variant="quiet" onClick={onNewGame}><span>＋</span> New</Button>

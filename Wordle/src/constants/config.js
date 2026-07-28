@@ -8,7 +8,7 @@ export const GAME_STATUS = {
 }
 
 export const DEFAULT_SETTINGS = {
-  theme: 'dark',
+  theme: 'light',
   soundEnabled: true,
   highContrast: false,
   reduceMotion: false,
