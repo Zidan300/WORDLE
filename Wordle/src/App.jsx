@@ -12,7 +12,7 @@ import { useGame } from './hooks/useGame'
 import { useKeyboard } from './hooks/useKeyboard'
 import { DEFAULT_SETTINGS, GAME_MODE } from './constants/config'
 import { getStorage, setStorage } from './utils/storage'
-import { playKeySound } from './utils/sound'
+import { playKeySound, playClickSound } from './utils/sound'
 import './styles/global.css'
 
 const SETTINGS_KEY = 'luma-wordle-settings'
@@ -72,6 +72,7 @@ function App() {
   }
 
   const selectMode = (mode) => {
+    playClickSound()
     updateSettings({ gameMode: mode })
     setScreen('game')
   }
@@ -82,7 +83,7 @@ function App() {
         <div className="ambient ambient-one" aria-hidden="true" />
         <div className="ambient ambient-two" aria-hidden="true" />
         <div className="noise" aria-hidden="true" />
-        <section className="game-frame" aria-label="Wordle game">
+          <section className="game-frame" aria-label="WordSpark game">
           <header className="header">
             <div className="watermark" aria-label="Created by Zidan Thapaliya">
               <span aria-hidden="true">✦</span> Created by Zidan Thapaliya
@@ -91,7 +92,7 @@ function App() {
           <div className="play-area">
             <div className="mode-select">
               <span className="modal-kicker">WELCOME TO</span>
-              <h2>Word Puzzle</h2>
+              <h2>WordSpark</h2>
               <p>Choose your difficulty and start guessing!</p>
               <div className="mode-cards">
                 {MODE_OPTIONS.map((mode) => (
@@ -117,17 +118,17 @@ function App() {
       <div className="ambient ambient-one" aria-hidden="true" />
       <div className="ambient ambient-two" aria-hidden="true" />
       <div className="noise" aria-hidden="true" />
-      <section className="game-frame" aria-label="Wordle game">
+      <section className="game-frame" aria-label="WordSpark game">
         <Header
           gameMode={settings.gameMode}
           hintsRemaining={game.hintsRemaining}
-          onHint={game.useHint}
-          onHelp={() => setModal('help')}
-          onNewGame={startNewGame}
-          onSettings={() => setModal('settings')}
-          onStats={() => setModal('stats')}
+          onHint={() => { playClickSound(); game.useHint(); }}
+          onHelp={() => { playClickSound(); setModal('help'); }}
+          onNewGame={() => { playClickSound(); startNewGame(); }}
+          onSettings={() => { playClickSound(); setModal('settings'); }}
+          onStats={() => { playClickSound(); setModal('stats'); }}
           soundEnabled={settings.soundEnabled}
-          onSoundToggle={() => updateSettings({ soundEnabled: !settings.soundEnabled })}
+          onSoundToggle={() => { playClickSound(); updateSettings({ soundEnabled: !settings.soundEnabled }); }}
         />
 
         <div className="play-area">
@@ -162,16 +163,16 @@ function App() {
         solutionWord={game.solutionWord}
         attempts={game.pastGuesses.length}
         stats={game.stats}
-        onClose={() => setModal(null)}
-        onNewGame={startNewGame}
-        onStats={() => setModal('stats')}
+        onClose={() => { playClickSound(); setModal(null); }}
+        onNewGame={() => { playClickSound(); startNewGame(); }}
+        onStats={() => { playClickSound(); setModal('stats'); }}
       />
-      <StatsModal isOpen={modal === 'stats'} stats={game.stats} onClose={() => setModal(null)} />
-      <HelpModal isOpen={modal === 'help'} onClose={() => setModal(null)} />
+      <StatsModal isOpen={modal === 'stats'} stats={game.stats} onClose={() => { playClickSound(); setModal(null); }} />
+      <HelpModal isOpen={modal === 'help'} onClose={() => { playClickSound(); setModal(null); }} />
       <SettingsModal
         isOpen={modal === 'settings'}
         settings={settings}
-        onClose={() => setModal(null)}
+        onClose={() => { playClickSound(); setModal(null); }}
         onChange={updateSettings}
       />
     </main>

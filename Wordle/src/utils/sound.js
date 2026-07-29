@@ -90,3 +90,7 @@ export function playHintSound() {
 export function playErrorSound() {
   playTone(200, 0.1, 0.02, 'square')
 }
+
+export function playClickSound() {
+  playTone(600, 0.03, 0.015)
+}

@@ -176,7 +176,7 @@ export function useGame({ onMessage, gameMode, soundEnabled = true }) {
   const keyboardStates = useMemo(() => getKeyboardStates(pastGuesses), [pastGuesses])
 
   return {
-    currentGuess: currentGuess.join(''),
+    currentGuess: currentGuess.map(c => c || ' ').join(''),
     gameStatus,
     handleKey,
     hintIndices,
