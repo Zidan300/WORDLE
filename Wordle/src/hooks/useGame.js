@@ -156,11 +156,10 @@ export function useGame({ onMessage, gameMode, soundEnabled = true }) {
       return
     }
     if (!validWords.has(guessStr)) {
-      const invalidEvaluation = Array(WORD_LENGTH).fill('invalid')
-      setPastGuesses((guesses) => [...guesses, { word: guessStr, evaluation: invalidEvaluation, invalid: true }])
-      setCurrentGuess(emptyGuess())
+      setShakeRow(pastGuesses.length)
       if (soundEnabled) playErrorSound()
       onMessage({ text: 'Not a valid word', tone: 'warning' })
+      window.setTimeout(() => setShakeRow(-1), 450)
       return
     }
 
@@ -222,7 +221,7 @@ export function useGame({ onMessage, gameMode, soundEnabled = true }) {
     }, 1450)
   }, [currentGuess, gameStatus, onMessage, pastGuesses.length, saveStats, solutionWord, soundEnabled])
 
-  const keyboardStates = useMemo(() => getKeyboardStates(pastGuesses.filter(g => !g.invalid)), [pastGuesses])
+  const keyboardStates = useMemo(() => getKeyboardStates(pastGuesses), [pastGuesses])
 
   return {
     currentGuess: currentGuess.map(c => c || ' ').join(''),
