@@ -1,0 +1,29 @@
+Today I am going to demonstrate my React Wordle game project.
+
+This is a web-based word guessing game built using React. I built it using Vite as the build tool, and it uses plain CSS for all styling without any external UI library.
+
+The project is organized inside the src folder. Inside src, I separated the application into several folders. The components folder holds all React components, organized into subfolders like Game, Keyboard, Layout, Modal, and UI. The hooks folder contains custom React hooks for game logic, keyboard input, and animations. The utils folder holds helper functions for evaluating guesses, managing keyboard colors, generating random words, handling sound effects, and saving to local storage. The constants folder stores configuration values, keyboard layout data, and the word lists. The styles folder contains CSS files, and the assets folder holds images and icons.
+
+The starting point of the application is main.jsx. It renders the App component into the DOM. App.jsx is the root component that controls the entire application. It manages the screen state, modal visibility, settings, and connects all the pieces together.
+
+The component architecture is broken into reusable pieces. The GameBoard component displays a grid of Row components. Each Row contains five Tile components that show individual letters. The Keyboard component is made up of KeyboardRow components, which contain KeyButton components for each key. There are also modal components for showing game results, statistics, help instructions, and settings. Layout components like Header and Footer provide the page structure. Small UI components like Button, Badge, Card, and Toast are reused across the application.
+
+State management is handled using React's useState hook inside a custom hook called useGame. This hook stores the solution word, the current guess as an array of letters, a list of past guesses with their evaluations, and the game status. It also tracks which row should shake on an invalid guess, hint positions and remaining hints, and player statistics. The useGame hook returns all the data and functions that the App component needs.
+
+The core logic is spread across several files. The useGame hook handles keyboard input. When a letter key is pressed, it fills the next empty tile in the current guess. Backspace removes the last letter. Enter submits the guess. Before accepting a guess, the hook checks that all five tiles are filled and that the word exists in the valid words list. If the guess passes, it calls the evaluateGuess utility to check each letter. This function does two passes. The first pass marks exact matches as correct and removes them from the solution copy. The second pass marks remaining matches as present and everything else as absent. The result is stored in the past guesses array.
+
+After evaluation, the game status changes to revealing, which triggers flip animations on the tiles. After a short delay, the hook checks for a win or loss. A win updates the statistics with a streak increase. A loss resets the streak. Statistics are saved to local storage using the storage utility so they persist between sessions.
+
+The keyboard colors are updated by the getKeyboardStates utility. It goes through every past guess and maps each letter to its highest state rank. Correct beats present, present beats absent. The Keyboard component receives these states as a prop and applies the correct CSS class to each key.
+
+The useKeyboard hook listens for physical keyboard events. When the user presses a key, it checks for modifier keys, converts the key to uppercase, and passes it to the game if it is a letter, enter, or backspace. The virtual keyboard works the same way through button click handlers.
+
+For extra features, the hint system allows the player to reveal a random correct letter. The useGame hook finds available positions that are not already filled or hinted, picks one at random, and places the correct letter there. A sound utility generates audio using the Web Audio API. Different tones play for key presses, tile reveals, winning, losing, hints, and errors. The settings modal lets the player change difficulty, toggle sound, or enable reduced motion mode, which disables all CSS animations. The statistics modal shows games played, win rate, streaks, and a guess distribution bar chart.
+
+All styling is done with vanilla CSS. The variables.css file defines custom properties for colors, borders, shadows, and animation timings. The animations.css file contains keyframe animations for tile flips, row shakes, confetti falling, modal entrances, and toast messages. The global.css file ties everything together with responsive media queries that adjust the layout for mobile devices and shorter screens. CSS classes are applied conditionally using template literals in the JSX to change tile colors, keyboard key colors, and animation states.
+
+React helped me build this project because it made it easy to split the interface into reusable components. Each component manages its own appearance and receives data through props. State management with hooks keeps the game logic separate from the display. Conditional rendering allows the app to show different screens, modals, and messages depending on the current state. Custom hooks let me organize related logic into reusable functions that are simple to connect to the UI.
+
+In conclusion, this project demonstrates how React can be used to build an interactive game with complex state management, animations, responsive design, and multiple features while keeping the code clean and organized.
+
+Thank you for watching.

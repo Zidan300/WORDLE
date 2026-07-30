@@ -28,3 +28,12 @@ export const EMPTY_STATS = {
   bestStreak: 0,
   distribution: [0, 0, 0, 0, 0, 0],
 }
+
+export const MASTER_SEQUENCE = [
+  'APPLE',
+  'BRAVE',
+  'CLOUD',
+  'DREAM',
+  'FLAME',
+  'GRACE',
+]

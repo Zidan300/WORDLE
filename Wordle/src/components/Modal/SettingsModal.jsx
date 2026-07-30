@@ -5,9 +5,9 @@ function Toggle({ checked, label, onChange, description }) {
 }
 
 const MODES = [
-  { id: 'easy', icon: '🌱', color: '#4caf50' },
-  { id: 'medium', icon: '⭐', color: '#ff9800' },
-  { id: 'hard', icon: '🔥', color: '#ed0a3f' },
+  { id: 'easy', color: '#4caf50' },
+  { id: 'medium', color: '#ff9800' },
+  { id: 'hard', color: '#ed0a3f' },
 ]
 
 export function SettingsModal({ isOpen, onClose, onChange, settings }) {
@@ -26,7 +26,6 @@ export function SettingsModal({ isOpen, onClose, onChange, settings }) {
                   onClick={() => onChange({ gameMode: mode.id })}
                   style={settings.gameMode === mode.id ? { borderColor: mode.color, borderBottomColor: mode.color } : {}}
                 >
-                  <span className="mode-indicator">{mode.icon}</span>
                   <span className="mode-label">{mode.id === 'easy' ? 'Easy' : mode.id === 'medium' ? 'Medium' : 'Hard'}</span>
                 </button>
               ))}

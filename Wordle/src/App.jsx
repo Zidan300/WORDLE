@@ -18,9 +18,9 @@ import './styles/global.css'
 const SETTINGS_KEY = 'luma-wordle-settings'
 
 const MODE_OPTIONS = [
-  { id: GAME_MODE.EASY, icon: '🌱', title: 'Easy', desc: 'Simple common words — perfect for beginners and young learners.' },
-  { id: GAME_MODE.MEDIUM, icon: '⭐', title: 'Medium', desc: 'Normal Wordle difficulty — a balanced challenge.' },
-  { id: GAME_MODE.HARD, icon: '🔥', title: 'Hard', desc: 'Tough words for seasoned word detectives.' },
+  { id: GAME_MODE.EASY, title: 'Easy', desc: 'Simple common words — perfect for beginners and young learners.' },
+  { id: GAME_MODE.MEDIUM, title: 'Medium', desc: 'Normal Wordle difficulty — a balanced challenge.' },
+  { id: GAME_MODE.HARD, title: 'Hard', desc: 'Tough words for seasoned word detectives.' },
 ]
 
 function App() {
@@ -97,10 +97,7 @@ function App() {
               <div className="mode-cards">
                 {MODE_OPTIONS.map((mode) => (
                   <button key={mode.id} className="mode-card" onClick={() => selectMode(mode.id)}>
-                    <div className="mode-card-title">
-                      <span className="mode-card-icon">{mode.icon}</span>
-                      {mode.title}
-                    </div>
+                    <div className="mode-card-title">{mode.title}</div>
                     <div className="mode-card-desc">{mode.desc}</div>
                   </button>
                 ))}

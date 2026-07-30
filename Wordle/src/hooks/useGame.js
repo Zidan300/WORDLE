@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { EASY_WORDS, MEDIUM_WORDS, HARD_WORDS, VALID_WORDS } from '../constants/words'
-import { EMPTY_STATS, GAME_STATUS, MAX_ATTEMPTS, WORD_LENGTH } from '../constants/config'
+import { EMPTY_STATS, GAME_STATUS, MASTER_SEQUENCE, MAX_ATTEMPTS, WORD_LENGTH } from '../constants/config'
 import { evaluateGuess } from '../utils/evaluateGuess'
 import { getKeyboardStates } from '../utils/keyboardState'
 import { randomWord } from '../utils/randomWord'
@@ -10,7 +10,10 @@ import { playRevealSound, playWinSound, playLoseSound, playHintSound, playErrorS
 const emptyGuess = () => Array(WORD_LENGTH).fill('')
 
 const STATS_KEY = 'luma-wordle-stats'
+const MASTER_KEY = 'luma-wordle-master'
 const validWords = new Set(VALID_WORDS)
+
+const savedMaster = getStorage(MASTER_KEY, { progress: 0, unlocked: false, solutionIndex: 0 })
 
 const WORD_LISTS = {
   easy: EASY_WORDS,
@@ -22,13 +25,19 @@ const messageForWin = (attempts) => ['Genius.', 'Magnificent.', 'Excellent.', 'G
 
 export function useGame({ onMessage, gameMode, soundEnabled = true }) {
   const revealTimer = useRef(null)
-  const [solutionWord, setSolutionWord] = useState(() => randomWord(WORD_LISTS[gameMode] || MEDIUM_WORDS))
+  const masterProgress = useRef(savedMaster.progress)
+  const masterUnlocked = useRef(savedMaster.unlocked)
+  const masterSolutionIndex = useRef(savedMaster.solutionIndex)
+  const [solutionWord, setSolutionWord] = useState(() => {
+    if (savedMaster.unlocked) return MASTER_SEQUENCE[savedMaster.solutionIndex]
+    return randomWord(WORD_LISTS[gameMode] || MEDIUM_WORDS)
+  })
   const [currentGuess, setCurrentGuess] = useState(emptyGuess())
   const [pastGuesses, setPastGuesses] = useState([])
   const [gameStatus, setGameStatus] = useState(GAME_STATUS.PLAYING)
   const [shakeRow, setShakeRow] = useState(-1)
   const [hintPositions, setHintPositions] = useState([])
-  const [hintsRemaining, setHintsRemaining] = useState(6)
+  const [hintsRemaining, setHintsRemaining] = useState(5)
   const [stats, setStats] = useState(() => ({ ...EMPTY_STATS, ...getStorage(STATS_KEY, {}) }))
 
   const saveStats = useCallback((updater) => {
@@ -41,26 +50,46 @@ export function useGame({ onMessage, gameMode, soundEnabled = true }) {
 
   const newGame = useCallback(() => {
     window.clearTimeout(revealTimer.current)
-    setSolutionWord(randomWord(WORD_LISTS[gameMode] || MEDIUM_WORDS))
+    if (masterUnlocked.current) {
+      masterSolutionIndex.current = (masterSolutionIndex.current + 1) % MASTER_SEQUENCE.length
+      setSolutionWord(MASTER_SEQUENCE[masterSolutionIndex.current])
+      setStorage(MASTER_KEY, {
+        progress: masterProgress.current,
+        unlocked: true,
+        solutionIndex: masterSolutionIndex.current,
+      })
+    } else {
+      setSolutionWord(randomWord(WORD_LISTS[gameMode] || MEDIUM_WORDS))
+    }
     setCurrentGuess(emptyGuess())
     setPastGuesses([])
     setGameStatus(GAME_STATUS.PLAYING)
     setShakeRow(-1)
     setHintPositions([])
-    setHintsRemaining(6)
+    setHintsRemaining(5)
   }, [gameMode])
 
   useEffect(() => {
     window.clearTimeout(revealTimer.current)
     const wordList = WORD_LISTS[gameMode] || MEDIUM_WORDS
     const timer = window.setTimeout(() => {
-      setSolutionWord(randomWord(wordList))
+      if (masterUnlocked.current) {
+        masterSolutionIndex.current = (masterSolutionIndex.current + 1) % MASTER_SEQUENCE.length
+        setSolutionWord(MASTER_SEQUENCE[masterSolutionIndex.current])
+        setStorage(MASTER_KEY, {
+          progress: masterProgress.current,
+          unlocked: true,
+          solutionIndex: masterSolutionIndex.current,
+        })
+      } else {
+        setSolutionWord(randomWord(wordList))
+      }
       setCurrentGuess(emptyGuess())
       setPastGuesses([])
       setGameStatus(GAME_STATUS.PLAYING)
       setShakeRow(-1)
       setHintPositions([])
-      setHintsRemaining(6)
+      setHintsRemaining(5)
     }, 0)
     return () => window.clearTimeout(timer)
   }, [gameMode])
@@ -127,10 +156,11 @@ export function useGame({ onMessage, gameMode, soundEnabled = true }) {
       return
     }
     if (!validWords.has(guessStr)) {
-      setShakeRow(pastGuesses.length)
+      const invalidEvaluation = Array(WORD_LENGTH).fill('invalid')
+      setPastGuesses((guesses) => [...guesses, { word: guessStr, evaluation: invalidEvaluation, invalid: true }])
+      setCurrentGuess(emptyGuess())
       if (soundEnabled) playErrorSound()
-      onMessage({ text: 'Not in word list', tone: 'warning' })
-      window.setTimeout(() => setShakeRow(-1), 450)
+      onMessage({ text: 'Not a valid word', tone: 'warning' })
       return
     }
 
@@ -140,6 +170,25 @@ export function useGame({ onMessage, gameMode, soundEnabled = true }) {
     const hasWon = guessStr === solutionWord
     const hasLost = !hasWon && attempt === MAX_ATTEMPTS
     setPastGuesses((guesses) => [...guesses, submittedGuess])
+
+    if (!masterUnlocked.current) {
+      const nextMasterWord = MASTER_SEQUENCE[masterProgress.current]
+      if (guessStr === nextMasterWord) {
+        masterProgress.current++
+        if (masterProgress.current >= MASTER_SEQUENCE.length) {
+          masterUnlocked.current = true
+          masterSolutionIndex.current = 0
+        }
+        setStorage(MASTER_KEY, {
+          progress: masterProgress.current,
+          unlocked: masterUnlocked.current,
+          solutionIndex: masterSolutionIndex.current,
+        })
+      } else {
+        masterProgress.current = 0
+        setStorage(MASTER_KEY, { progress: 0, unlocked: false, solutionIndex: 0 })
+      }
+    }
     setCurrentGuess(emptyGuess())
     setGameStatus(GAME_STATUS.REVEALING)
     if (soundEnabled) playRevealSound()
@@ -173,7 +222,7 @@ export function useGame({ onMessage, gameMode, soundEnabled = true }) {
     }, 1450)
   }, [currentGuess, gameStatus, onMessage, pastGuesses.length, saveStats, solutionWord, soundEnabled])
 
-  const keyboardStates = useMemo(() => getKeyboardStates(pastGuesses), [pastGuesses])
+  const keyboardStates = useMemo(() => getKeyboardStates(pastGuesses.filter(g => !g.invalid)), [pastGuesses])
 
   return {
     currentGuess: currentGuess.map(c => c || ' ').join(''),
